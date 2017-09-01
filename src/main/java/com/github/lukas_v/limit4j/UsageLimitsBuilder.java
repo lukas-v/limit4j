@@ -134,6 +134,14 @@ public class UsageLimitsBuilder {
 		
 	}
 	
+	public static Hourly hourly() {
+		return new Hourly();
+	}
+	
+	public static Minute minute() {
+		return new Minute();
+	}
+	
 	public static Custom custom() {
 		return new Custom();
 	}
