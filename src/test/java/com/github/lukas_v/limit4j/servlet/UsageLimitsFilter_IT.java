@@ -7,6 +7,14 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -91,11 +99,15 @@ public class UsageLimitsFilter_IT {
 	}
 	
 	@Test
-	public void test() throws Exception {
+	public void verifyFirstRequest() throws Exception {
 		HttpURLConnection httpCon = (HttpURLConnection) rootPath().openConnection();
 		httpCon.setRequestMethod("GET");
 		
-		assertEquals(200, httpCon.getResponseCode());
+		assertEquals
+		(
+			HttpServletResponse.SC_OK, 
+			httpCon.getResponseCode()
+		);
 		
 		try(InputStreamReader isr = new InputStreamReader(httpCon.getInputStream());
 			BufferedReader br = new BufferedReader(isr);)
@@ -103,6 +115,51 @@ public class UsageLimitsFilter_IT {
 			String line = br.readLine();
 			assertTrue(line != null && line.startsWith("OK: "));
 		}
+	}
+	
+	@Test
+	public void verifyLimitOfFilter() throws Exception {
+		int limit = UsageLimitsFilterForTest.REQUESTS_IN_MINUTE;
+		int threads = 1 + (limit  / 2);
+		int requests = limit * 3;
+		
+		List<Future<Integer>> tasks = new ArrayList<>();
+		ExecutorService service = Executors.newFixedThreadPool(threads);
+		try {
+			for(int i=0 ; i<requests ; i++)
+			{
+				Future<Integer> task = service.submit(() -> {
+					HttpURLConnection httpCon = (HttpURLConnection) rootPath().openConnection();
+					httpCon.setRequestMethod("GET");
+					
+					return httpCon.getResponseCode();
+				});
+				
+				tasks.add(task);
+			}
+		} finally {
+			service.shutdown();
+			service.awaitTermination(5, TimeUnit.SECONDS);
+		}
+		
+		int accepted = 0;
+		int rejected = 0;
+		for(Future<Integer> task : tasks)
+		{
+			int result = task.get().intValue();
+			if(result == HttpServletResponse.SC_OK) {
+				accepted++;
+			}
+			else if(result == HttpServletResponse.SC_FORBIDDEN) {
+				rejected++;
+			}
+			else {
+				fail("Unexpected response code " + result);
+			}
+		}
+		
+		assertEquals(limit, accepted);
+		assertEquals(requests - limit, rejected);
 	}
 	
 }

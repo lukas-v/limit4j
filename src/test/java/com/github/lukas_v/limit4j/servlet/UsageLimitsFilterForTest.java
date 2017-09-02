@@ -11,10 +11,12 @@ import com.github.lukas_v.limit4j.UsageLimitsBuilder;
 @WebFilter(urlPatterns={"/*"})
 public class UsageLimitsFilterForTest extends UsageLimitsFilter {
 	
+	public static final int REQUESTS_IN_MINUTE = 5;
+	
 	private final UsageLimits limits = UsageLimitsBuilder
 		.minute()
 		.withFramesSplitBySeconds(15)
-		.withTotalLimit(5)
+		.withTotalLimit(REQUESTS_IN_MINUTE)
 		.create();
 	
 	@Override
