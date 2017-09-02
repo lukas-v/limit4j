@@ -38,8 +38,11 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		
+		<version.servlet-api>3.1.0</version.servlet-api>
+		
 		<version.junit>4.12</version.junit>
 		<version.mockito>2.7.22</version.mockito>
+		<version.shrinkwrap>1.2.6</version.shrinkwrap>
 		<version.testcontainers>1.4.2</version.testcontainers>
 		
 		<version.plugin.resources>3.0.2</version.plugin.resources>
@@ -63,22 +66,23 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.jboss.shrinkwrap</groupId>
+			<artifactId>shrinkwrap-depchain</artifactId>
+			<version>${version.shrinkwrap}</version>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>testcontainers</artifactId>
 			<version>${version.testcontainers}</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.jboss.shrinkwrap</groupId>
-			<artifactId>shrinkwrap-depchain</artifactId>
-			<version>1.2.6</version>
-			<type>pom</type>
-		</dependency>
 		
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
+			<version>${version.servlet-api}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -105,6 +109,13 @@
 			<plugin>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>${version.plugin.failsafe}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

@@ -7,7 +7,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.function.Consumer;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -19,7 +18,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
@@ -27,29 +25,31 @@ import static org.junit.Assert.*;
 
 public class UsageLimitsFilter_IT {
 	
+	private static final String LIBRARY_NAME = "limit4j.jar";
+	private static final String LIBRARY_PATH = "target/" + LIBRARY_NAME;
+	
+	private static final String WEBAPP_NAME = "test-app.war";
+	private static final String WEBAPP_PATH = "target/" + WEBAPP_NAME;
+	
 	@ClassRule
 	public static final TestRule arquillian = new TestRule() {
 		
 		@Override
 		public Statement apply(Statement base, Description description) {
 			
-			WebArchive archive = ShrinkWrap.create
+			ShrinkWrap.create
 				(
 					WebArchive.class,
-					"app.war"
+					WEBAPP_NAME
 				)
-				.addAsLibrary(new File("target/limit4j.jar"))
+				.addAsLibrary(new File(LIBRARY_PATH))
 				.addAsWebInfResource(new File("src/test/resources/jboss-web.xml"))
 				.addClass(UsageLimitsFilterForTest.class)
-				.addClass(DummyServlet.class);
-			
-			System.err.println(Paths.get("target/app.war").toAbsolutePath());
-			System.out.println(archive.toString(true));
-			
-			archive.as(ZipExporter.class)
+				.addClass(DummyServlet.class)
+				.as(ZipExporter.class)
 				.exportTo
 				(
-					new File("target/app.war"), 
+					new File(WEBAPP_PATH), 
 					true // overwrite
 				);
 			
@@ -57,29 +57,6 @@ public class UsageLimitsFilter_IT {
 		}
 		
 	};
-	
-//	@Rule
-//	public final GenericContainer wildfly = new GenericContainer("jboss/wildfly:10.1.0.Final")
-//		.withExposedPorts(8080)
-//		.withFileSystemBind
-//		(
-//			new File("target/app.war").getAbsolutePath(), 
-//			"/opt/jboss/wildfly/standalone/deployments/app.war", 
-//			BindMode.READ_WRITE
-//		)
-//		.withLogConsumer(new Consumer<OutputFrame>() {
-//
-//			@Override
-//			public void accept(OutputFrame t) {
-//				System.err.print(t.getUtf8String());
-//			}
-//			
-//		})
-//		.waitingFor
-//		(
-//			new LogMessageWaitStrategy()
-//				.withRegEx("^.*( WFLYSRV0025: WildFly ).*( started in ).*\n$")
-//		);
 	
 	@Rule
 	public final GenericContainer<?> wildfly = new GenericContainer<>
@@ -89,24 +66,16 @@ public class UsageLimitsFilter_IT {
 					.from("jboss/wildfly:10.1.0.Final")
 					.copy
 					(
-						"app.war", 
-						"/opt/jboss/wildfly/standalone/deployments/app.war"
+						WEBAPP_NAME, 
+						"/opt/jboss/wildfly/standalone/deployments/" + WEBAPP_NAME
 					)
 				)
 				.withFileFromPath
 				(
-					"app.war", 
-					Paths.get("target/app.war").toAbsolutePath()
+					WEBAPP_NAME, 
+					Paths.get(WEBAPP_PATH).toAbsolutePath()
 				)
 		)
-		.withLogConsumer(new Consumer<OutputFrame>() {
-			
-			@Override
-			public void accept(OutputFrame t) {
-				System.err.print(t.getUtf8String());
-			}
-			
-		})
 		.waitingFor
 		(
 			new LogMessageWaitStrategy()
@@ -123,7 +92,6 @@ public class UsageLimitsFilter_IT {
 	
 	@Test
 	public void test() throws Exception {
-		System.err.println(rootPath());
 		HttpURLConnection httpCon = (HttpURLConnection) rootPath().openConnection();
 		httpCon.setRequestMethod("GET");
 		
@@ -133,8 +101,7 @@ public class UsageLimitsFilter_IT {
 			BufferedReader br = new BufferedReader(isr);)
 		{
 			String line = br.readLine();
-			System.err.println(line);
-			assertTrue(line.startsWith("OK: "));
+			assertTrue(line != null && line.startsWith("OK: "));
 		}
 	}
 	
