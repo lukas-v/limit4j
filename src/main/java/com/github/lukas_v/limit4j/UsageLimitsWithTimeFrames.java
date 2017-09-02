@@ -4,6 +4,8 @@ import java.time.Duration;
 
 class UsageLimitsWithTimeFrames implements UsageLimits {
 	
+	private final Object lock = new Object();
+	
 	private final long span;
 	long getSpan() {
 		return span;
@@ -59,25 +61,31 @@ class UsageLimitsWithTimeFrames implements UsageLimits {
 	
 	@Override
 	public boolean allowsRequest() {
-		shiftRateFrames();
-		
-		if(numberOfRequests >= limit) {
-			return false;
-		}
-		else
+		synchronized(lock)
 		{
-			numberOfRequests++;
-			frame++;
+			shiftRateFrames();
 			
-			return true;
+			if(numberOfRequests >= limit) {
+				return false;
+			}
+			else
+			{
+				numberOfRequests++;
+				frame++;
+				
+				return true;
+			}
 		}
 	}
 	
 	@Override
 	public boolean isUsed() {
-		shiftRateFrames();
-		
-		return numberOfRequests > 0;
+		synchronized(lock)
+		{
+			shiftRateFrames();
+			
+			return numberOfRequests > 0;
+		}
 	}
 	
 	private void shiftRateFrames() {
