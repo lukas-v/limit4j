@@ -4,9 +4,9 @@ import java.time.Duration;
 
 import static com.github.lukas_v.limit4j.Checks.*;
 
-public class UsageLimitsBuilder {
+public abstract class UsageLimitsBuilder {
 	
-	private static class WithLimitsBase {
+	private static class WithLimitsBase extends UsageLimitsBuilder {
 		
 		protected Duration oneFrameSize;
 		protected int numberOfFrames;
@@ -18,7 +18,8 @@ public class UsageLimitsBuilder {
 			this.totalLimit = atLeastOneRequest(totalLimit);
 		}
 		
-		public UsageLimits create() {
+		@Override
+		public final UsageLimits create() {
 			return new UsageLimitsWithTimeFrames
 			(
 				oneFrameSize, 
@@ -115,6 +116,8 @@ public class UsageLimitsBuilder {
 		}
 		
 	}
+	
+	public abstract UsageLimits create();
 	
 	public static Hourly hourly() {
 		return new Hourly();
