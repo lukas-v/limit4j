@@ -15,6 +15,11 @@ public class DefaultFineGrainedLimits<K> implements FineGrainedLimits<K> {
 	}
 	
 	@Override
+	public UsageLimits forGroup(K group) {
+		return allLimits.get(group);
+	}
+	
+	@Override
 	public boolean allowsRequest(K group) {
 		UsageLimits limits = allLimits.get(group);
 		return limits != null

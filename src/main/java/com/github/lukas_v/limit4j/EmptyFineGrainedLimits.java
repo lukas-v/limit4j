@@ -5,6 +5,11 @@ public class EmptyFineGrainedLimits<K> implements FineGrainedLimits<K> {
 	public EmptyFineGrainedLimits() {}
 	
 	@Override
+	public UsageLimits forGroup(K group) {
+		return null;
+	}
+	
+	@Override
 	public boolean allowsRequest(K group) {
 		return false;
 	}
