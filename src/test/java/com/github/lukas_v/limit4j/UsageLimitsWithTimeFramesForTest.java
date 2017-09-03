@@ -2,7 +2,7 @@ package com.github.lukas_v.limit4j;
 
 import java.time.Duration;
 
-class UsageLimitsWithTimeFramesForTest extends UsageLimitsWithTimeFrames {
+final class UsageLimitsWithTimeFramesForTest extends UsageLimitsWithTimeFrames {
 	
 	long time = 0;
 	

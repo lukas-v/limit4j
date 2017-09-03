@@ -42,7 +42,7 @@ class UsageLimitsWithTimeFrames implements UsageLimits {
 		this.historySize = atLeastTwoFrames(historySize);
 		
 		this.numberOfRequests = 0;
-		this.nextFrameTime = 0;
+		this.nextFrameTime = this.span;
 		this.frame = 0;
 		this.framesHistory = new int[historySize-1];
 	}
@@ -101,7 +101,9 @@ class UsageLimitsWithTimeFrames implements UsageLimits {
 			// shift buckets that still are related to entire time frame
 			while(sourceIndex >= 0)
 			{
+				numberOfRequests -= framesHistory[destinationIndex];
 				framesHistory[destinationIndex] = framesHistory[sourceIndex];
+				framesHistory[sourceIndex] = 0;
 				
 				sourceIndex--;
 				destinationIndex--;
@@ -110,7 +112,9 @@ class UsageLimitsWithTimeFrames implements UsageLimits {
 			// shift bucket holding current time frame
 			if(sourceIndex == -1)
 			{
+				numberOfRequests -= framesHistory[destinationIndex];
 				framesHistory[destinationIndex] = frame;
+				
 				destinationIndex--;
 			}
 			else {

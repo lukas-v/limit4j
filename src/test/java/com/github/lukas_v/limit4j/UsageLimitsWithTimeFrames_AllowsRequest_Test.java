@@ -17,7 +17,7 @@ public class UsageLimitsWithTimeFrames_AllowsRequest_Test {
 	
 	@Parameters
 	public static Collection<Object> data() {
-		return Arrays.asList(2, 3, 5);
+		return Arrays.asList(2, 3, 4, 5);
     }
 	
 	private int historySize;
@@ -99,6 +99,34 @@ public class UsageLimitsWithTimeFrames_AllowsRequest_Test {
 		limit.time = limit.getSpan() * limit.getNumberOfFrames();
 		assertTrue(limit.allowsRequest());
 		
+		assertEquals(1, limit.totalRequests());
+		assertEquals(1, limit.requestsInCurrentFrame());
+	}
+	
+	@Test
+	public void requestExhaustedInFirstTimeFrame() {
+		long frameTime = limit.getSpan();
+		long maxRequests = limit.getLimit();
+		int frames = limit.getNumberOfFrames();
+		
+		// exhaust the limit in the first frame
+		for(int i=0 ; i<maxRequests ; i++) {
+			limit.allowsRequest();
+		}
+		
+		// verify behavior after each time frame switch 
+		for(int frame=0 ; frame<frames-1 ; frame++)
+		{
+			limit.time = (frame + 1) * frameTime;
+			
+			assertFalse(limit.allowsRequest());
+			assertEquals(maxRequests, limit.totalRequests());
+			assertEquals(0, limit.requestsInCurrentFrame());
+		}
+		
+		// last frame must be removed at this time
+		limit.time = (frames + 1) * frameTime;
+		assertTrue(limit.allowsRequest());
 		assertEquals(1, limit.totalRequests());
 		assertEquals(1, limit.requestsInCurrentFrame());
 	}
