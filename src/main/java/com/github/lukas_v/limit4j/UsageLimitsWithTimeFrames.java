@@ -2,6 +2,8 @@ package com.github.lukas_v.limit4j;
 
 import java.time.Duration;
 
+import static com.github.lukas_v.limit4j.Checks.*;
+
 class UsageLimitsWithTimeFrames implements UsageLimits {
 	
 	private final Object lock = new Object();
@@ -35,19 +37,9 @@ class UsageLimitsWithTimeFrames implements UsageLimits {
 	private final int[] framesHistory;
 	
 	UsageLimitsWithTimeFrames(Duration span, int limit, int historySize) {
-		if(limit < 1) {
-			throw new IllegalArgumentException();
-		}
-		else if(span.compareTo(Duration.ofMillis(100)) < 0) {
-			throw new IllegalArgumentException();
-		}
-		else if(historySize < 2) {
-			throw new IllegalArgumentException();
-		}
-		
-		this.limit = limit;
-		this.span = span.toMillis();
-		this.historySize = historySize;
+		this.limit = atLeastOneRequest(limit);
+		this.span = minimalFrameSize(span).toMillis();
+		this.historySize = atLeastTwoFrames(historySize);
 		
 		this.numberOfRequests = 0;
 		this.nextFrameTime = 0;

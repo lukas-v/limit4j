@@ -2,6 +2,8 @@ package com.github.lukas_v.limit4j;
 
 import java.time.Duration;
 
+import static com.github.lukas_v.limit4j.Checks.*;
+
 public class UsageLimitsBuilder {
 	
 	private static class WithLimitsBase {
@@ -11,9 +13,9 @@ public class UsageLimitsBuilder {
 		protected int totalLimit;
 		
 		private WithLimitsBase(Duration oneFrameSize, int numberOfFrames, int totalLimit) {
-			this.oneFrameSize = oneFrameSize;
-			this.numberOfFrames = numberOfFrames;
-			this.totalLimit = totalLimit;
+			this.oneFrameSize = minimalFrameSize(oneFrameSize);
+			this.numberOfFrames = atLeastTwoFrames(numberOfFrames);
+			this.totalLimit = atLeastOneRequest(totalLimit);
 		}
 		
 		public UsageLimits create() {
@@ -34,31 +36,19 @@ public class UsageLimitsBuilder {
 		}
 		
 		public Custom withOneFrameSize(Duration oneFrameSize) {
-			if(oneFrameSize.compareTo(Duration.ofSeconds(1)) < 0) {
-				throw new IllegalArgumentException("Minimal frame size is one second.");
-			}
-			
-			this.oneFrameSize = oneFrameSize;
+			this.oneFrameSize = minimalFrameSize(oneFrameSize);
 			
 			return this;
 		}
 		
 		public Custom withNumberOfFrames(int numberOfFrames) {
-			if(numberOfFrames < 2) {
-				throw new IllegalArgumentException("Minimal number of frames is two.");
-			}
-			
-			this.numberOfFrames = numberOfFrames;
+			this.numberOfFrames = atLeastTwoFrames(numberOfFrames);
 			
 			return this;
 		}
 		
 		public Custom withTotalLimit(int totalLimit) {
-			if(totalLimit < 1) {
-				throw new IllegalArgumentException("At least one request must be allowed.");
-			}
-			
-			this.totalLimit = totalLimit;
+			this.totalLimit = atLeastOneRequest(totalLimit);
 			
 			return this;
 		}
@@ -72,18 +62,14 @@ public class UsageLimitsBuilder {
 		}
 		
 		public Hourly withTotalLimit(int totalLimit) {
-			if(totalLimit < 1) {
-				throw new IllegalArgumentException("At least one request must be allowed.");
-			}
-			
-			this.totalLimit = totalLimit;
+			this.totalLimit = atLeastOneRequest(totalLimit);
 			
 			return this;
 		}
 		
 		public Hourly withFramesSplitByMinutes(int minutes) {
-			if(minutes < 1 || minutes >= 60 || (60 % minutes) != 0) {
-				throw new IllegalArgumentException();
+			if(minutes < 1 || minutes > 30 || (60 % minutes) != 0) {
+				throw new IllegalArgumentException("Valid frame size is from 1 to 30 minutes.");
 			}
 			
 			this.oneFrameSize = Duration.ofMinutes(minutes);
@@ -93,8 +79,8 @@ public class UsageLimitsBuilder {
 		}
 		
 		public Hourly withFramesSplitBySeconds(int seconds) {
-			if(seconds < 1 || seconds >= 3600 || (3600 % seconds) != 0) {
-				throw new IllegalArgumentException();
+			if(seconds < 1 || seconds > 1800 || (3600 % seconds) != 0) {
+				throw new IllegalArgumentException("Valid frame size is from 1 to 1800 seconds.");
 			}
 			
 			this.oneFrameSize = Duration.ofSeconds(seconds);
@@ -112,18 +98,14 @@ public class UsageLimitsBuilder {
 		}
 		
 		public Minute withTotalLimit(int totalLimit) {
-			if(totalLimit < 1) {
-				throw new IllegalArgumentException("At least one request must be allowed.");
-			}
-			
-			this.totalLimit = totalLimit;
+			this.totalLimit = atLeastOneRequest(totalLimit);
 			
 			return this;
 		}
 		
 		public Minute withFramesSplitBySeconds(int seconds) {
-			if(seconds < 1 || seconds >= 60 || (60 % seconds) != 0) {
-				throw new IllegalArgumentException();
+			if(seconds < 1 || seconds > 30 || (60 % seconds) != 0) {
+				throw new IllegalArgumentException("Valid frame size is from 1 to 30 seconds.");
 			}
 			
 			this.oneFrameSize = Duration.ofSeconds(seconds);
