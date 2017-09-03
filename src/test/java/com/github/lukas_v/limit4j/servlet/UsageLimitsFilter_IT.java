@@ -7,6 +7,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -160,6 +162,59 @@ public class UsageLimitsFilter_IT {
 		
 		assertEquals(limit, accepted);
 		assertEquals(requests - limit, rejected);
+	}
+	
+	@Test
+	public void verifyBehaviorOverLongerTimePeriod() throws Exception {
+		int limit = UsageLimitsFilterForTest.REQUESTS_IN_MINUTE;
+		
+		for(int loop=0 ; loop<2 ; loop++)
+		{
+			ZonedDateTime start = ZonedDateTime.now();
+			for(int i=0 ; i<limit ; i++)
+			{
+				HttpURLConnection httpCon = (HttpURLConnection) rootPath().openConnection();
+				httpCon.setRequestMethod("GET");
+				
+				assertEquals
+				( 
+					HttpServletResponse.SC_OK, 
+					httpCon.getResponseCode()
+				);
+			}
+			
+			ZonedDateTime nextMinuteStart = start
+				.plusMinutes(1)
+				.minusSeconds(3);
+			
+			ZonedDateTime now = ZonedDateTime.now();
+			while(now.isBefore(nextMinuteStart))
+			{
+				HttpURLConnection httpCon = (HttpURLConnection) rootPath().openConnection();
+				httpCon.setRequestMethod("GET");
+				
+				assertEquals
+				(
+					HttpServletResponse.SC_FORBIDDEN, 
+					httpCon.getResponseCode()
+				);
+				
+				now = ZonedDateTime.now();
+				if(now.isBefore(nextMinuteStart)) {
+					Thread.sleep(Duration.ofSeconds(1).toMillis());
+				}
+			}
+			
+			Duration pause = Duration.between
+			(
+				ZonedDateTime.now(), 
+				start.plusMinutes(1).plusSeconds(2)
+			);
+			
+			if(pause.toMillis() >= 500) {
+				Thread.sleep(pause.toMillis());
+			}
+		}
 	}
 	
 }

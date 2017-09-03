@@ -15,7 +15,7 @@ public class UsageLimitsFilterForTest extends UsageLimitsFilter {
 	
 	private final UsageLimits limits = UsageLimitsBuilder
 		.minute()
-		.withFramesSplitBySeconds(15)
+		.withFramesSplitBySeconds(1)
 		.withTotalLimit(REQUESTS_IN_MINUTE)
 		.create();
 	
