@@ -18,7 +18,7 @@ public class RejectedUsage implements UsageLimits {
 	
 	@Override
 	public boolean isUsed() {
-		return false;
+		return true;
 	}
 	
 }
