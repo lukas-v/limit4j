@@ -18,7 +18,7 @@ public abstract class UsageLimitsFilter implements Filter {
 	public void init(FilterConfig filterConfig) throws ServletException {}
 	
 	@Override
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+	public final void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		UsageLimits limits = limits(request);
 		if(limits == null) {
 			unauthorizedRequest(request, response);
@@ -34,14 +34,56 @@ public abstract class UsageLimitsFilter implements Filter {
 		}
 	}
 	
+	/**
+	 * Returns {@link UsageLimits limits} related to the given request
+	 * or {@code null} in case that the request should be rejected
+	 * immediately.
+	 * 
+	 * @param request
+	 * 
+	 * @return limits valid for given request or {@code null}.
+	 */
 	protected abstract UsageLimits limits(ServletRequest request);
 	
+	/**
+	 * Method is called in case that the request can not be processed
+	 * because no limits can be applied at all ({@link #limits(ServletRequest)}
+	 * returned {@code null}).
+	 * 
+	 * <p>
+	 * Default behavior sends HTTP error code
+	 * {@link HttpServletResponse#SC_UNAUTHORIZED}.
+	 * </p>
+	 * 
+	 * @param request
+	 * @param response
+	 * 
+	 * @throws IOException
+	 * @throws ServletException
+	 */
 	protected void unauthorizedRequest(ServletRequest request, ServletResponse response) throws IOException, ServletException {
-		((HttpServletResponse)response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
+		((HttpServletResponse)response)
+			.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 	}
 	
+	/**
+	 * Method is called in case that the request can not be processed
+	 * because usage limits have already been reached.
+	 * 
+	 * <p>
+	 * Default behavior sends HTTP error code
+	 * {@link HttpServletResponse#SC_FORBIDDEN}.
+	 * </p>
+	 * 
+	 * @param request
+	 * @param response
+	 * 
+	 * @throws IOException
+	 * @throws ServletException
+	 */
 	protected void requestRejected(UsageLimits limits, ServletRequest request, ServletResponse response) throws IOException, ServletException {
-		((HttpServletResponse)response).sendError(HttpServletResponse.SC_FORBIDDEN);
+		((HttpServletResponse)response)
+			.sendError(HttpServletResponse.SC_FORBIDDEN);
 	}
 	
 	@Override
