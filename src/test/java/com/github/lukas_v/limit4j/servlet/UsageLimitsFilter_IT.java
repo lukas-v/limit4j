@@ -28,7 +28,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import static org.junit.Assert.*;
@@ -73,7 +73,7 @@ public class UsageLimitsFilter_IT {
 		(
 			new ImageFromDockerfile()
 				.withDockerfileFromBuilder(builder -> builder
-					.from("jboss/wildfly:10.1.0.Final")
+					.from("jboss/wildfly:20.0.1.Final")
 					.copy
 					(
 						WEBAPP_NAME, 

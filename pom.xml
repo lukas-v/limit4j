@@ -7,7 +7,7 @@
 	
 	<groupId>com.github.lukas_v.limit4j</groupId>
 	<artifactId>limit4j</artifactId>
-	<version>0.9.0-SNAPSHOT</version>
+	<version>0.9.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<licenses>
@@ -40,16 +40,16 @@
 		
 		<version.servlet-api>3.1.0</version.servlet-api>
 		
-		<version.junit>4.12</version.junit>
-		<version.mockito>2.7.22</version.mockito>
+		<version.junit>4.13.1</version.junit>
+		<version.mockito>3.5.13</version.mockito>
 		<version.shrinkwrap>1.2.6</version.shrinkwrap>
-		<version.testcontainers>1.4.2</version.testcontainers>
+		<version.testcontainers>1.14.3</version.testcontainers>
 		
-		<version.plugin.resources>3.0.2</version.plugin.resources>
-		<version.plugin.compiler>3.6.2</version.plugin.compiler>
-		<version.plugin.jar>3.0.2</version.plugin.jar>
-		<version.plugin.surefire>2.20</version.plugin.surefire>
-		<version.plugin.failsafe>2.20</version.plugin.failsafe>
+		<version.plugin.resources>3.1.0</version.plugin.resources>
+		<version.plugin.compiler>3.8.1</version.plugin.compiler>
+		<version.plugin.jar>3.2.0</version.plugin.jar>
+		<version.plugin.surefire>3.0.0-M4</version.plugin.surefire>
+		<version.plugin.failsafe>3.0.0-M5</version.plugin.failsafe>
 	</properties>
 	
 	<dependencies>
