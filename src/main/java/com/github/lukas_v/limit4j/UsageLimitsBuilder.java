@@ -117,7 +117,7 @@ public interface UsageLimitsBuilder {
 		
 	}
 	
-	public abstract UsageLimits create();
+	public UsageLimits create();
 	
 	public static Hourly hourly() {
 		return new Hourly();
