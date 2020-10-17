@@ -7,7 +7,6 @@ import java.util.Objects;
 
 public class DefaultFineGrainedLimits<K> implements FineGrainedLimits<K> {
 	
-	private final Object lock = new Object();
 	private final Map<K, UsageLimits> allLimits;
 	
 	private DefaultFineGrainedLimits(Map<K, UsageLimits> limits) {
@@ -24,21 +23,6 @@ public class DefaultFineGrainedLimits<K> implements FineGrainedLimits<K> {
 		UsageLimits limits = allLimits.get(group);
 		
 		return limits != null && limits.allowsRequest();
-	}
-	
-	@Override
-	public boolean isUsed() {
-		synchronized(lock)
-		{
-			for(UsageLimits limits : allLimits.values())
-			{
-				if(limits.isUsed()) {
-					return true;
-				}
-			}
-			
-			return false;
-		}
 	}
 	
 	public static <K> FineGrainedLimits<K> from(Map<K, UsageLimits> limits) {

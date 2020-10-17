@@ -12,9 +12,4 @@ public class EmptyFineGrainedLimits<K> implements FineGrainedLimits<K> {
 		return false;
 	}
 	
-	@Override
-	public boolean isUsed() {
-		return false;
-	}
-	
 }
