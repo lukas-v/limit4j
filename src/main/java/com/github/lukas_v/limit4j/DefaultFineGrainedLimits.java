@@ -22,9 +22,8 @@ public class DefaultFineGrainedLimits<K> implements FineGrainedLimits<K> {
 	@Override
 	public boolean allowsRequest(K group) {
 		UsageLimits limits = allLimits.get(group);
-		return limits != null
-			? limits.allowsRequest()
-			: false;
+		
+		return limits != null && limits.allowsRequest();
 	}
 	
 	@Override

@@ -4,6 +4,8 @@ import java.time.Duration;
 
 final class Checks {
 	
+	private Checks() {}
+	
 	private static final Duration MIN_FRAME_SIZE = Duration.ofMillis(100);
 	
 	static int atLeastOneRequest(int requests) {

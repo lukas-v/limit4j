@@ -4,9 +4,9 @@ import java.time.Duration;
 
 import static com.github.lukas_v.limit4j.Checks.*;
 
-public abstract class UsageLimitsBuilder {
+public interface UsageLimitsBuilder {
 	
-	private static class WithLimitsBase extends UsageLimitsBuilder {
+	static class WithLimitsBase implements UsageLimitsBuilder {
 		
 		protected Duration oneFrameSize;
 		protected int numberOfFrames;

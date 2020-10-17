@@ -2,8 +2,6 @@ package com.github.lukas_v.limit4j;
 
 public class EmptyFineGrainedLimits<K> implements FineGrainedLimits<K> {
 	
-	public EmptyFineGrainedLimits() {}
-	
 	@Override
 	public UsageLimits forGroup(K group) {
 		return null;
