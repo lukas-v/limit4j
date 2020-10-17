@@ -6,15 +6,17 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,77 +28,78 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.model.Statement;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.images.builder.ImageFromDockerfile;
+
+import com.github.lukas_v.limit4j.servlet.containers.Tomcat;
+import com.github.lukas_v.limit4j.servlet.containers.Tomee;
+import com.github.lukas_v.limit4j.servlet.containers.WildFly;
 
 import static org.junit.Assert.*;
 
+@RunWith(Parameterized.class)
 public class UsageLimitsFilter_IT {
 	
-	private static final String LIBRARY_NAME = "limit4j.jar";
-	private static final String LIBRARY_PATH = "target/" + LIBRARY_NAME;
+	private static final String LIBRARY_FILE = "limit4j.jar";
+	private static final String LIBRARY_PATH = "target/" + LIBRARY_FILE;
 	
-	private static final String WEBAPP_NAME = "test-app.war";
-	private static final String WEBAPP_PATH = "target/" + WEBAPP_NAME;
+	private static final String WEBAPP_NAME = "test-app";
+	private static final String WEBAPP_FILE = WEBAPP_NAME + ".war";
+	private static final String WEBAPP_PATH = "target/" + WEBAPP_FILE;
+	
+	@Parameterized.Parameters(name = "{0}")
+	public static Collection<Object[]> parameters() {
+		return Arrays.asList
+				(
+					WildFly.build(WEBAPP_PATH, WEBAPP_FILE), 
+					Tomcat.build(WEBAPP_PATH, WEBAPP_FILE), 
+					Tomee.build(WEBAPP_PATH, WEBAPP_FILE)
+				)
+				.stream()
+				.map(container -> new Object[] { container.getDockerImageName(), container })
+				.collect(Collectors.toList());
+	}
 	
 	@ClassRule
-	public static final TestRule arquillian = new TestRule() {
+	public static final TestRule deployment = new TestRule() {
 		
 		@Override
 		public Statement apply(Statement base, Description description) {
-			
 			ShrinkWrap.create
-				(
-					WebArchive.class,
-					WEBAPP_NAME
-				)
-				.addAsLibrary(new File(LIBRARY_PATH))
-				.addAsWebInfResource(new File("src/test/resources/jboss-web.xml"))
-				.addClass(UsageLimitsFilterForTest.class)
-				.addClass(DummyServlet.class)
-				.as(ZipExporter.class)
-				.exportTo
-				(
-					new File(WEBAPP_PATH), 
-					true // overwrite
-				);
+			(
+				WebArchive.class,
+				WEBAPP_FILE
+			)
+			.addAsLibrary(new File(LIBRARY_PATH))
+			.addClass(UsageLimitsFilterForTest.class)
+			.addClass(DummyServlet.class)
+			.as(ZipExporter.class)
+			.exportTo
+			(
+				new File(WEBAPP_PATH), 
+				true // overwrite
+			);
 			
 			return base;
 		}
 		
 	};
 	
+	@Parameterized.Parameter(0)
+	public String imageName;
+	
 	@Rule
-	public final GenericContainer<?> wildfly = new GenericContainer<>
-		(
-			new ImageFromDockerfile()
-				.withDockerfileFromBuilder(builder -> builder
-					.from("jboss/wildfly:20.0.1.Final")
-					.copy
-					(
-						WEBAPP_NAME, 
-						"/opt/jboss/wildfly/standalone/deployments/" + WEBAPP_NAME
-					)
-				)
-				.withFileFromPath
-				(
-					WEBAPP_NAME, 
-					Paths.get(WEBAPP_PATH).toAbsolutePath()
-				)
-		)
-		.waitingFor
-		(
-			new LogMessageWaitStrategy()
-				.withRegEx("^.*( WFLYSRV0025: WildFly ).*( started in ).*\n$")
-		);
+	@Parameterized.Parameter(1)
+	public GenericContainer<?> container;
 	
 	private URL rootPath() throws MalformedURLException {
 		return new URL
 		(
-			"http://" + wildfly.getContainerIpAddress()
-				+ ":" + wildfly.getMappedPort(8080)
+			"http://" + container.getContainerIpAddress()
+				+ ":" + container.getMappedPort(8080)
+				+ "/" + WEBAPP_NAME
 		);
 	}
 	
