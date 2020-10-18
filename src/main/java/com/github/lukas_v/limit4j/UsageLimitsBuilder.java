@@ -8,24 +8,50 @@ public interface UsageLimitsBuilder {
 	
 	static class WithLimitsBase implements UsageLimitsBuilder {
 		
+		protected boolean concurrent;
 		protected Duration oneFrameSize;
 		protected int numberOfFrames;
 		protected int totalLimit;
 		
 		private WithLimitsBase(Duration oneFrameSize, int numberOfFrames, int totalLimit) {
+			this.concurrent = true;
 			this.oneFrameSize = minimalFrameSize(oneFrameSize);
 			this.numberOfFrames = atLeastTwoFrames(numberOfFrames);
 			this.totalLimit = atLeastOneRequest(totalLimit);
 		}
 		
+		public WithLimitsBase withConcurrency() {
+			this.concurrent = true;
+			
+			return this;
+		}
+		
+		public WithLimitsBase withoutConcurrency() {
+			this.concurrent = false;
+			
+			return this;
+		}
+		
 		@Override
 		public final UsageLimits create() {
-			return new UsageLimitsWithTimeFrames
-			(
-				oneFrameSize, 
-				totalLimit, 
-				numberOfFrames
-			);
+			if(concurrent)
+			{
+				return new SynchronizedLimitsWithFrames
+				(
+					oneFrameSize, 
+					totalLimit, 
+					numberOfFrames
+				);
+			}
+			else
+			{
+				return new LimitsWithFrames
+				(
+					oneFrameSize, 
+					totalLimit, 
+					numberOfFrames
+				);
+			}
 		}
 		
 	}
@@ -34,6 +60,16 @@ public interface UsageLimitsBuilder {
 		
 		private Custom() {
 			super(Duration.ofSeconds(30), 2, 1);
+		}
+		
+		@Override
+		public Custom withConcurrency() {
+			return (Custom)super.withConcurrency();
+		}
+		
+		@Override
+		public Custom withoutConcurrency() {
+			return (Custom)super.withoutConcurrency();
 		}
 		
 		public Custom withOneFrameSize(Duration oneFrameSize) {
@@ -60,6 +96,16 @@ public interface UsageLimitsBuilder {
 		
 		private Hourly() {
 			super(Duration.ofMinutes(5), 20, 1);
+		}
+		
+		@Override
+		public Hourly withConcurrency() {
+			return (Hourly)super.withConcurrency();
+		}
+		
+		@Override
+		public Hourly withoutConcurrency() {
+			return (Hourly)super.withoutConcurrency();
 		}
 		
 		public Hourly withTotalLimit(int totalLimit) {
@@ -96,6 +142,16 @@ public interface UsageLimitsBuilder {
 		
 		private Minute() {
 			super(Duration.ofSeconds(5), 20, 1);
+		}
+		
+		@Override
+		public Minute withConcurrency() {
+			return (Minute)super.withConcurrency();
+		}
+		
+		@Override
+		public Minute withoutConcurrency() {
+			return (Minute)super.withoutConcurrency();
 		}
 		
 		public Minute withTotalLimit(int totalLimit) {
