@@ -1,6 +1,6 @@
 package com.github.lukas_v.limit4j;
 
-public class UsageWithoutLimits implements UsageLimits {
+public final class UsageWithoutLimits implements UsageLimits {
 
 	private static UsageWithoutLimits instance;
 	public static UsageWithoutLimits getInstance() {

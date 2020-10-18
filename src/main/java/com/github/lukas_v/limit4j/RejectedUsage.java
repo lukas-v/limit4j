@@ -1,6 +1,6 @@
 package com.github.lukas_v.limit4j;
 
-public class RejectedUsage implements UsageLimits {
+public final class RejectedUsage implements UsageLimits {
 	
 	private static RejectedUsage instance;
 	public static RejectedUsage getInstance() {
