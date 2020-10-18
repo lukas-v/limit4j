@@ -1,13 +1,16 @@
 # limit4j
+Simple to use rate limiting library for Java applications.
 
 ## Example
+
+### Rate limiting entire web application
 
 ```java
 @WebFilter(urlPatterns={"/*"})
 public class AwsomeWebFilter extends UsageLimitsFilter {
 
   /**
-   * Limits usage to 100 request during the latest minute.
+   * Limits usage to 100 requests in the last minute.
    */
   private final UsageLimits limits = UsageLimitsBuilder
     .minute()
@@ -23,10 +26,14 @@ public class AwsomeWebFilter extends UsageLimitsFilter {
 }
 ```
 
+### Session and path based rate limiting
 ```java
 @WebFilter(urlPatterns={"/*"})
 public class AwsomeWebFilter extends UsageLimitsFilter {
 
+  /**
+   * Builder for creating rate limiting instances for each session.
+   */
   private final UsageLimitsBuilder defaultLimit = UsageLimitsBuilder
     .minute()
     .withFramesSplitBySeconds(1)
@@ -39,12 +46,12 @@ public class AwsomeWebFilter extends UsageLimitsFilter {
     HttpSession session = httpRequest.getSession(false);
     if(session == null)
     {
-      // HttpServletResponse.SC_UNAUTHORIZED
+      // returning null results to HttpServletResponse.SC_UNAUTHORIZED
       return null;
     }
     else
     {
-      String name = UsageLimitsFilterForTest.class.getName();
+      String name = AwsomeWebFilter.class.getName();
       
       @SuppressWarnings("unchecked")
       FineGrainedLimits<String> limits = (FineGrainedLimits<String>)session
@@ -57,7 +64,7 @@ public class AwsomeWebFilter extends UsageLimitsFilter {
           tmp.put(path, defaultLimit.create());
         }
         
-        limits = DefaultFineGrainedLimits.from(tmp);
+        limits = FineGrainedLimitsBuilder.fromMap(tmp);
         
         session.setAttribute(name, limits);
       }
@@ -67,7 +74,7 @@ public class AwsomeWebFilter extends UsageLimitsFilter {
       UsageLimits limit = limits.forGroup(group);
       if(limit == null)
       {
-        // HttpServletResponse.SC_FORBIDDEN
+        // unknown paths will be rejected by HttpServletResponse.SC_FORBIDDEN
         limit = RejectedUsage.getInstance();
       }
       
