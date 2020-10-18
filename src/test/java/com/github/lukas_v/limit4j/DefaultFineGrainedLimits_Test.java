@@ -12,7 +12,7 @@ public class DefaultFineGrainedLimits_Test {
 	
 	@Test
 	public void emptyMap_factoryMethodReturnsEmptyLimits() {
-		FineGrainedLimits<String> aggregate = DefaultFineGrainedLimits.from
+		FineGrainedLimits<String> aggregate = FineGrainedLimitsBuilder.fromMap
 		(
 			Collections.<String, UsageLimits>emptyMap()
 		);
@@ -28,7 +28,7 @@ public class DefaultFineGrainedLimits_Test {
 			new DummyUsageLimits()
 		);
 		
-		FineGrainedLimits<String> aggregate = DefaultFineGrainedLimits.from(limits);
+		FineGrainedLimits<String> aggregate = FineGrainedLimitsBuilder.fromMap(limits);
 		
 		assertEquals(DefaultFineGrainedLimits.class, aggregate.getClass());
 	}
@@ -39,7 +39,7 @@ public class DefaultFineGrainedLimits_Test {
 		limits.put("key_1", new DummyUsageLimits());
 		limits.put("key_2", new DummyUsageLimits());
 		
-		FineGrainedLimits<String> aggregate = DefaultFineGrainedLimits.from(limits);
+		FineGrainedLimits<String> aggregate = FineGrainedLimitsBuilder.fromMap(limits);
 		
 		assertEquals(DefaultFineGrainedLimits.class, aggregate.getClass());
 	}
@@ -53,7 +53,7 @@ public class DefaultFineGrainedLimits_Test {
 		limits.put(key, limit);
 		limits.put("key_2", new DummyUsageLimits());
 		
-		FineGrainedLimits<String> aggregate = DefaultFineGrainedLimits.from(limits);
+		FineGrainedLimits<String> aggregate = FineGrainedLimitsBuilder.fromMap(limits);
 		
 		assertFalse(aggregate.allowsRequest(key));
 		limit.setAllowsRequest(true);
@@ -69,7 +69,7 @@ public class DefaultFineGrainedLimits_Test {
 		limits.put(key, limit);
 		limits.put("key_2", new DummyUsageLimits());
 		
-		FineGrainedLimits<String> aggregate = DefaultFineGrainedLimits.from(limits);
+		FineGrainedLimits<String> aggregate = FineGrainedLimitsBuilder.fromMap(limits);
 		
 		assertTrue(aggregate.allowsRequest(key));
 		limit.setAllowsRequest(false);
